@@ -1,0 +1,17 @@
+use_frameworks!
+
+platform :ios, '9.0'
+
+target 'ZegoLyricView_Example' do
+
+  pod 'ZegoLyricView', :path => '../'
+  pod 'YYKit'
+  pod 'Masonry'
+  pod 'MBProgressHUD'
+
+  target 'ZegoLyricView_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
