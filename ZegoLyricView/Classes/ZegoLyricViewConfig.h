@@ -13,14 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZegoLyricViewConfig : NSObject
 
 /**
- * 每行歌词的 beginTime 是否需要校正偏移量.
- * 完整歌曲需要校正, 传 YES;
- * 高潮片段歌曲不需要校正, 传 NO
- * 默认为 YES
- */
-@property (nonatomic, assign) BOOL shouldTrimBeginTime;
-
-/**
  * 歌词行数, 默认 2 行
  */
 @property (nonatomic, assign) NSUInteger lineCount;

@@ -52,10 +52,8 @@
 }
 
 - (void)setupMusicDataSource:(ZegoLyricModel *)model {
+  [self reset];
   _model = model;
-  if (!model) {
-    [self reset];
-  }
   [self addDummyLinesInPlace:model];
   [self reloadData];
 }
@@ -64,21 +62,9 @@
   if (!model ||
       !model.lines ||
       beginTime >= endTime) {
-    [self reset];
     [self setupMusicDataSource:nil];
     return;
   }
-  
-  [self reset];
-  
-  // Validation
-//  beginTime = MAX(0, beginTime);
-//  ZegoLyricLineModel *lastLineModel = model.lines.lastObject;
-//  if (lastLineModel) {
-//    NSInteger eTime = lastLineModel.beginTime + lastLineModel.duration;
-//    endTime = MIN(endTime, eTime);
-//  }
-  
   ZegoLyricModel *filteredModel = [self filterModel:model fromBeginTime:beginTime toEndtime:endTime];
   [self setupMusicDataSource:filteredModel];
 }

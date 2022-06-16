@@ -19,7 +19,6 @@
 }
 
 - (void)defaultConfig {
-  _shouldTrimBeginTime = YES;
   _lineCount = 2;
   _playingFont = [UIFont systemFontOfSize:20 weight:UIFontWeightMedium];
   _playingColor = [UIColor redColor];

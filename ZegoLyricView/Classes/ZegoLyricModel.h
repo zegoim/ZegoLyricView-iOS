@@ -25,6 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,  copy ) NSString *content;/// 每行歌词的内容
 @property (nonatomic,  copy ) NSArray <ZegoLyricWordModel *>*words;/// 每行歌词的字信息
 
+/**
+ * 模拟空数据, 创建对象默认添加到歌词最后一行.
+ * 歌词控件内部使用, 外界不要调用.
+ */
 + (instancetype)dummyMax;
 
 @end
@@ -43,13 +47,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger krcFormatOffset;///歌词偏移 歌词相对音乐要快多少 单位毫秒
 @property (nonatomic,  copy ) NSArray <ZegoLyricLineModel *>*lines;
 
-/// 歌词数据解析, 默认 trim 为 YES
-/// @param jsonData 通过SDK获取到的JSON格式歌词数据
+/**
+ * 歌词数据解析, 默认 trim 为 YES
+ * @param jsonData 通过SDK获取到的JSON格式歌词数据
+ */
 + (instancetype)analyticalLyricData:(id)jsonData;
 
-/// 歌词数据解析
-/// @param jsonData 通过SDK获取到的JSON格式歌词数据
-/// @param trim 每行歌词的 beginTime 是否需要偏移. 完整歌曲需要, 传 YES; 高潮片段歌曲不需要, 传 NO
+/**
+ * 歌词数据解析
+ * @param jsonData 通过SDK获取到的JSON格式歌词数据
+ * @param trim 每行歌词的 beginTime 是否需要偏移. 完整歌曲需要, 传 YES; 高潮片段歌曲不需要, 传 NO
+ */
 + (instancetype)analyzeLyricData:(id)jsonData trim:(BOOL)trim;
 
 @end
