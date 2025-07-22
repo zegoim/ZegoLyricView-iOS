@@ -29,19 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZegoLyricView : UITableView
 
 /**
- * 事件监听对象
- */
-@property (nonatomic,  weak ) id<ZegoLyricViewProtocol> lyricDelegate;
-
-/**
- * 设置歌词进度
- */
-@property (nonatomic, assign) NSInteger progress;
-
-/**
  * 配置对象
  */
 @property (nonatomic, strong) ZegoLyricViewConfig *config;
+
+/**
+ * 事件监听对象
+ */
+@property (nonatomic,  weak ) id<ZegoLyricViewProtocol> lyricDelegate;
 
 
 - (instancetype)initWithFrame:(CGRect)frame config:(ZegoLyricViewConfig *)config;
@@ -51,7 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param style 列表样式
 /// @param config 歌词配置
 - (instancetype)initWithFrame:(CGRect)frame style:(UITableViewStyle)style config:(ZegoLyricViewConfig *)config;
-
 
 /**
  * 设置歌词数据, 默认不过滤
@@ -67,6 +61,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setupMusicDataSource:(ZegoLyricModel * _Nullable)model
                    beginTime:(NSInteger)beginTime
                      endTime:(NSInteger)endTime;
+
+/**
+ * 设置播放器进度, 展示对应歌词
+ * @param progress 播放器进度. 单位毫秒(ms)
+ */
+- (void)setProgress:(NSInteger)progress;
+
+/**
+ * 设置播放器进度, 展示对应歌词
+ * 仅用于高潮片段资源类型
+ * @param progress 播放器进度. 单位毫秒(ms)
+ * @param segBeginTime 高潮片段开始时间
+ * @param krcFormatOffset krc 歌词与歌曲的偏移时间量
+ */
+- (void)setAccompanimentClipProgress:(NSInteger)progress
+                        segBeginTime:(NSInteger)segBeginTime
+                     krcFormatOffset:(NSInteger)krcFormatOffset;
 
 @end
 

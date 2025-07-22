@@ -52,36 +52,62 @@
 }
 
 - (void)setupMusicDataSource:(ZegoLyricModel *)model {
-  [self reset];
-  _model = model;
-  [self addDummyLinesInPlace:model];
-  [self reloadData];
+  ///原数据可能有缓存, 防止内部重复处理, 故进行 copy
+  ZegoLyricModel *copiedModel = model.copy;
+  [self _setupLyricViewModel:copiedModel];
 }
 
 - (void)setupMusicDataSource:(ZegoLyricModel *)model beginTime:(NSInteger)beginTime endTime:(NSInteger)endTime {
   if (!model ||
       !model.lines ||
       beginTime >= endTime) {
-    [self setupMusicDataSource:nil];
+    [self _setupLyricViewModel:nil];
     return;
   }
-  ZegoLyricModel *filteredModel = [self filterModel:model fromBeginTime:beginTime toEndtime:endTime];
-  [self setupMusicDataSource:filteredModel];
+  ///原数据可能有缓存, 防止内部重复处理, 故进行 copy
+  ZegoLyricModel *copiedModel = model.copy;
+  [self pruneModelInPlace:copiedModel fromBeginTime:beginTime toEndtime:endTime];
+  [self _setupLyricViewModel:copiedModel];
 }
 
-- (ZegoLyricModel *)filterModel:(ZegoLyricModel *)model fromBeginTime:(NSInteger)beginTime toEndtime:(NSInteger)endTime {
+- (void)setProgress:(NSInteger)progress {
+  [self setAccompanimentClipProgress:progress segBeginTime:0 krcFormatOffset:0];
+}
+
+- (void)setAccompanimentClipProgress:(NSInteger)progress segBeginTime:(NSInteger)segBeginTime krcFormatOffset:(NSInteger)krcFormatOffset {
+  progress = progress + segBeginTime - krcFormatOffset;
+  if (progress < 0) {
+    return;
+  }
+  [self updateLyric:progress];
+  [self linefeed:progress];
+}
+
+#pragma mark - Private
+- (void)_setupLyricViewModel:(ZegoLyricModel *)model {
+  [self reset];
+  if (model) {
+    [model.lines enumerateObjectsUsingBlock:^(ZegoLyricLineModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+      obj.beginTime -= model.krcFormatOffset;
+    }];
+    _model = model;
+    [self addDummyLinesInPlace:model];
+  }
+  [self reloadData];
+}
+
+- (void)pruneModelInPlace:(ZegoLyricModel *)model fromBeginTime:(NSInteger)beginTime toEndtime:(NSInteger)endTime {
   NSMutableArray *lines = [NSMutableArray array];
   [model.lines enumerateObjectsUsingBlock:^(ZegoLyricLineModel * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-    if (obj.beginTime > endTime) {
+    if (obj.beginTime >= endTime) {
       return;
     }
-    if (obj.beginTime + obj.duration < beginTime) {
+    if (obj.beginTime + obj.duration <= beginTime) {
       return;
     }
     [lines addObject:obj];
   }];
   model.lines = lines.copy;
-  return model;
 }
 
 - (void)addDummyLinesInPlace:(ZegoLyricModel *)lyricModel {
@@ -103,6 +129,39 @@
 - (void)setConfig:(ZegoLyricViewConfig *)config {
   _config = config;
   [self reloadData];
+}
+
+- (void)setCurrentRow:(NSInteger)currentRow currentTime:(NSInteger)currentTime {
+    if (self.currentRow != currentRow) {
+        self.currentRow = currentRow;
+        [self reloadData];
+        [self scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:currentRow inSection:0]
+                    atScrollPosition:UITableViewScrollPositionTop
+                            animated:YES];
+    } else {
+        //如果是同一行要考虑逐字动画
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:currentRow inSection:0];
+        ZegoLyricCell *cell = [self cellForRowAtIndexPath:indexPath];
+        [cell updateTextProgress:currentTime];
+    }
+
+}
+
+- (void)updateLyric:(NSInteger)progress {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    CGFloat secTime = progress;
+    for (int i = 0; i < self.model.lines.count; i++) {
+      ZegoLyricLineModel *lineModel = self.model.lines[i];
+      if (lineModel.beginTime > secTime) {
+        NSInteger currentRow = 0;
+        if (i > 0) {
+          currentRow = i - 1;
+        }
+        [self setCurrentRow:currentRow currentTime:progress];
+        break;
+      }
+    }
+  });
 }
 
 #pragma mark - UITableViewDelegate UITableViewDataSource
@@ -127,49 +186,6 @@
   CGFloat cellHeight = CGRectGetHeight(self.bounds) / self.config.lineCount;
   CGFloat height = MAX(20, cellHeight);
   return height;
-}
-
-- (void)setCurrentRow:(NSInteger)currentRow currentTime:(NSInteger)currentTime {
-    if (self.currentRow != currentRow) {
-        self.currentRow = currentRow;
-        [self reloadData];
-        [self scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:currentRow inSection:0]
-                    atScrollPosition:UITableViewScrollPositionTop
-                            animated:YES];
-    } else {
-        //如果是同一行要考虑逐字动画
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:currentRow inSection:0];
-        ZegoLyricCell *cell = [self cellForRowAtIndexPath:indexPath];
-        [cell updateTextProgress:currentTime];
-    }
-
-}
-
-- (void)setProgress:(NSInteger)progress {
-    if (progress < 0) {
-        return;
-    }
-    _progress = progress;
-    
-  [self updateLyric:progress];
-  [self linefeed:progress];
-}
-
-- (void)updateLyric:(NSInteger)progress {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    CGFloat secTime = progress;
-    for (int i = 0; i < self.model.lines.count; i++) {
-      ZegoLyricLineModel *lineModel = self.model.lines[i];
-      if (lineModel.beginTime > secTime) {
-        NSInteger currentRow = 0;
-        if (i > 0) {
-          currentRow = i - 1;
-        }
-        [self setCurrentRow:currentRow currentTime:progress];
-        break;
-      }
-    }
-  });
 }
 
 #pragma mark - Linefeed

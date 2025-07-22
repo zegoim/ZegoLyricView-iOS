@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'ZegoLyricView'
-  s.version          = '0.1.0'
+  s.version          = '0.1.1'
   s.summary          = 'A view to display krc lyrics.'
 
   s.description      = <<-DESC

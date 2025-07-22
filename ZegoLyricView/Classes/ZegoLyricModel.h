@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ZegoLyricLineModel : NSObject
+@interface ZegoLyricLineModel : NSObject <NSCopying>
 
 @property (nonatomic, assign) NSInteger beginTime;///每行歌词开始时间 单位为毫秒
 @property (nonatomic, assign) NSInteger duration;///行的时长
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ZegoLyricModel : NSObject
+@interface ZegoLyricModel : NSObject <NSCopying>
 
 @property (nonatomic,  copy ) NSString *al;///唱片集
 @property (nonatomic,  copy ) NSString *ar;///歌手
@@ -48,17 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,  copy ) NSArray <ZegoLyricLineModel *>*lines;
 
 /**
- * 歌词数据解析, 默认 trim 为 YES
+ * 歌词数据解析
  * @param jsonData 通过SDK获取到的JSON格式歌词数据
  */
 + (instancetype)analyticalLyricData:(id)jsonData;
-
-/**
- * 歌词数据解析
- * @param jsonData 通过SDK获取到的JSON格式歌词数据
- * @param trim 每行歌词的 beginTime 是否需要偏移. 完整歌曲需要, 传 YES; 高潮片段歌曲不需要, 传 NO
- */
-+ (instancetype)analyzeLyricData:(id)jsonData trim:(BOOL)trim;
 
 @end
 
